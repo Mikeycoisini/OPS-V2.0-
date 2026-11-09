@@ -1,5 +1,7 @@
 # EquipOps V2.0 前端
 
+A0配套基线与后续差距记录位于[后端仓库](https://github.com/Mikeycoisini/EquipOps)的`docs/plan/55-A0基线差距来源与迁移映射.md`。本地双仓检出可在后端执行`python3 scripts/check_a0.py --frontend ../OPS-V2.0-`复核配套源码与迁移基线；报告随本次分支交付，本地路径为`../EquipOps/docs/plan/55-A0基线差距来源与迁移映射.md`。
+
 Vue 3 + TypeScript + Vite + Pinia + Element Plus 的企业设备运维后台。采用白色导航、浅灰内容背景和蓝色强调；不包含运行时业务 mock、演示账号或伪造汇总。
 
 ## 本地运行
