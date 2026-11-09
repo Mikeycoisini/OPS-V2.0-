@@ -2,6 +2,8 @@
 
 A0配套基线与后续差距记录位于[后端仓库](https://github.com/Mikeycoisini/EquipOps)的`docs/plan/55-A0基线差距来源与迁移映射.md`。本地双仓检出可在后端执行`python3 scripts/check_a0.py --frontend ../OPS-V2.0-`复核配套源码与迁移基线；报告随本次分支交付，本地路径为`../EquipOps/docs/plan/55-A0基线差距来源与迁移映射.md`。
 
+A1使用`.nvmrc`指定Node22.18，GitHub CI执行锁定安装、契约测试及构建。工程验证与隔离测试账号说明见后端`docs/plan/57-A1工程底座与实际验证.md`；`scripts/a1_browser.cjs`可对真实本机前后端执行登录、企业切换及权限检查，不在业务运行时注入假身份。
+
 Vue 3 + TypeScript + Vite + Pinia + Element Plus 的企业设备运维后台。采用白色导航、浅灰内容背景和蓝色强调；不包含运行时业务 mock、演示账号或伪造汇总。
 
 ## 本地运行
