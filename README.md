@@ -41,6 +41,7 @@ npm run preview
 | 设备档案 | `/equipment` 分页、增改删；`/{id}/status?targetStatus=` 启停；`/equipment/history?equipmentId=` 完成履历 |
 | 备件库存 | `/spare-parts` 目录、`/warehouses` 已启用默认仓库、`/warehouse-stocks` 余额、`/inventory/transactions` 流水 |
 | 出入库 | `/inventory/stock-ins` 入库、`/inventory/issues` 工单领料、`/inventory/returns` 按原领料退回 |
+| 操作审计 | 管理员读取`/audit-events`分页与详情，按动作、操作者、对象、结果及时间筛选；仅展示后端脱敏数据，无编辑删除 |
 | 企业成员 | 管理员使用 `/tenant-members` 分页、添加已有账号和启停成员；角色只读展示 |
 
 ### 保留的业务边界
@@ -61,3 +62,5 @@ npm run preview
 配套后端为[Mikeycoisini/EquipOps](https://github.com/Mikeycoisini/EquipOps)。本仓库为[Mikeycoisini/OPS-V2.0-](https://github.com/Mikeycoisini/OPS-V2.0-)。当前源码与构建结果各自记录，实际数据库写入和角色场景以真实联调结果为准。
 
 新增页面包括日期周期维护、维修统计与导出故障告警处置，访问权限和状态流转由配套后端核验。后续功能按完整系统阶段路线交付。
+
+审计事件和对象ID兼容BIGINT字符串，页面不转换为JavaScript Number。可按后端59号报告配置本机环境，运行`scripts/a2_browser.cjs`复核真实详情与企业切换晚到响应隔离。

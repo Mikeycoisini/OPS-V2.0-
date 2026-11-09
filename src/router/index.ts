@@ -14,6 +14,7 @@ export const router = createRouter({ history: createWebHistory(), routes: [
     { path: 'statistics', name: 'statistics', component: () => import('@/views/StatisticsView.vue'), meta: { title: '维护统计' } },
     { path: 'inventory', name: 'inventory', component: () => import('@/views/InventoryView.vue'), meta: { title: '备件库存' } },
     { path: 'alerts', name: 'alerts', component: () => import('@/views/AlertsView.vue'), meta: { title: '告警与处置', admin: true } },
+    { path: 'audit', name: 'audit', component: () => import('@/views/AuditView.vue'), meta: { title: '操作审计', admin: true } },
     { path: 'members', name: 'members', component: () => import('@/views/MembersView.vue'), meta: { title: '企业成员', admin: true } },
   ] },
   { path: '/:pathMatch(.*)*', redirect: '/workspace' },

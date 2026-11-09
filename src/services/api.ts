@@ -4,6 +4,7 @@ import type { MaintenancePlan, MaintenanceInput, MaintenanceExecution, Compatibl
 import type { Equipment, EquipmentPage, EquipmentStatusFilter, EquipmentUpsert, MaintenanceHistoryRecord } from '@/types'
 import type { AuthUser, Member, Order, OrderCreate, OrderLog, OrderPart, Page, SparePart, SparePartUpsert, StockInput, StockIssue, StockReturn, StockTransaction, Tenant, Warehouse, WarehouseStock, WorkspaceSummary } from '@/domain'
 import { createHttpClient } from './http'
+import { createAuditApi } from './audit-contract'
 import { compatibleEquipmentPath } from './compatibility-path'
 import type { CompatibleEquipment } from './s2-contract'
 import { assertOverduePage } from './overdue-contract'
@@ -21,6 +22,7 @@ async function paged<T>(path: string, query: Query = {}): Promise<Page<T>> {
 }
 
 export const api = {
+  ...createAuditApi(request),
   alerts: (query: Query = {}) => paged<AlertEvent>('/operations/alerts', query),
   alert: (id: AlertId) => request<AlertEvent>(`/operations/alerts/${id}`),
   alertActions: (id: AlertId) => request<AlertAction[]>(`/operations/alerts/${id}/actions`),
