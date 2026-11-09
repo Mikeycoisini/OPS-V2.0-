@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env.local
+.env.*.local
+
+# Local runtime and private artifacts
+.env
+.env.*
+!.env.example
+/artifacts/
+.idea/
+.vscode/
+*.log
