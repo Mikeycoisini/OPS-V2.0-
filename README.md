@@ -37,11 +37,12 @@ npm run preview
 | 页面 | 当前后端接口与行为 |
 | --- | --- |
 | 工作台 | `/workspace/summary`；待办统计与最新工单。低库存汇总不可用时不显示 0 |
-| 维修工单 | `/work-orders` 服务端分页、详情、用料与日志；报修、派单、开始维修、维修记录、提交验收、通过/退回 |
+| 维修工单 | `/work-orders` 服务端分页、详情、用料与日志；报修、首次派单、受控改派、开始维修、维修记录、提交验收、通过/退回 |
 | 设备档案 | `/equipment` 分页、增改删；`/{id}/status?targetStatus=` 启停；`/equipment/history?equipmentId=` 完成履历 |
 | 备件库存 | `/spare-parts` 目录、`/warehouses` 已启用默认仓库、`/warehouse-stocks` 余额、`/inventory/transactions` 流水 |
 | 出入库 | `/inventory/stock-ins` 入库、`/inventory/issues` 工单领料、`/inventory/returns` 按原领料退回 |
 | 操作审计 | 管理员读取`/audit-events`分页与详情，按动作、操作者、对象、结果及时间筛选；仅展示后端脱敏数据，无编辑删除 |
+| 协作团队 | `/teams`及详情；普通成员只读自己参加的启用团队，管理员维护资料、成员和工作厂区，集合完整替换 |
 | 厂区管理 | 管理员使用 `/sites/catalog` 读取厂区目录，通过现有 POST/PUT 维护资料与启停；`GET /sites` 仍为默认厂区 |
 | 企业成员 | 管理员使用 `/tenant-members` 分页、添加已有账号和启停成员；使用 `/{id}/site-scopes` 完整替换厂区访问范围，角色只读展示 |
 
@@ -69,3 +70,7 @@ npm run preview
 A3新增管理员厂区页及成员厂区范围选择器；空集合明确表示无普通厂区授权，管理员全厂区例外单独提示。范围保存使用读取版本，409冲突需重新加载；企业切换、换成员、关闭及离开页面均作废晚到响应。厂区及成员关系ID兼容BIGINT字符串；通用负责人选择器保持字符串ID，不经Number转换。
 
 A3前端验证分为两个脚本：`scripts/a3_ui_contract.cjs`在真实Chromium中拦截固定HTTP响应，验证页面/传输契约与手机导航，不代表真实后端授权；`scripts/a3_browser.cjs`连接真实本机后端，使用A1隔离账号检查厂区持久化、普通成员旧会话动态撤权及切企业晚到响应，并恢复原成员范围和测试厂区启停状态。前者默认前端5176，后者5177，通过`A3_FRONTEND_URL`改为对应loopback源。真实脚本要求环境提供`A1_TEST_PASSWORD`及隔离库名`A1_DB_CONFIRM`，不得在命令行填写密码；Playwright模块及Chromium路径分别由`A1_PLAYWRIGHT_MODULE`/`A1_CHROMIUM_PATH`指定。截图位于忽略的`artifacts/a3/`。
+
+A4新增协作团队与工单受控改派。首次派单只向未分配的`PENDING`工单展示；已分配或维修中的交接走带版本、UUID请求号及原因的`POST /work-orders/{id}/reassign`，待验收/完成不展示改派。团队成员身份不扩大个人厂区权限；停用团队或移除影响未结束工单的成员/厂区，后端409要求先交接。409需重新加载；未知写入结果锁定原请求号与参数，只允许手动原号重试或核对后重新开始，不自动重试。工单关联ID和库存流水工单筛选保留BIGINT字符串。
+
+A4验证脚本`scripts/a4_ui_contract.cjs`使用真实Chromium与固定HTTP响应验证页面、UUID/版本、字符串ID和手机布局；`scripts/a4_browser.cjs`连接真实后端，验证团队页面写入、真实版本竞争后重载交接、历史用料/日志保留、普通成员只读、跨企业晚到响应，并合法恢复工单责任、清空及停用测试团队。真实脚本要求后端A4Fixture工具输出隔离JSON（环境变量`A4_BROWSER_FIXTURE`指向文件），使用完整UUID的`teamCode`供精确清理；`A1_TEST_PASSWORD`和隔离库名`A1_DB_CONFIRM`从受保护环境提供，禁止在命令行填密码。默认前端5177（真实）/5178（固定响应），通过`A4_FRONTEND_URL`指定loopback源；Playwright/Chromium设置沿用A3。实际截图与清理证据位于忽略的`artifacts/a4/`，后端fixture最终清理由持有该UUID的隔离工具执行。

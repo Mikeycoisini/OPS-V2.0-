@@ -61,3 +61,12 @@ test('工单字符串ID保留精度，身份比较兼容字符串且不能自验
  for (const status of ['AWAITING_ACCEPTANCE', 'COMPLETED']) assert.equal(allowedOrderActions({ ...order, status }, user(3, ['TENANT_ADMIN'])).reassign, false)
  assert.equal(allowedOrderActions({ ...order, status: 'PENDING' }, user(2)).reassign, false)
 })
+
+test('旧派单仅未分配的PENDING可用，已有责任人的交接必须走受控改派', () => {
+ const admin = user(3, ['TENANT_ADMIN'])
+ assert.equal(allowedOrderActions({ ...order, status: 'PENDING', assigneeUserId: null }, admin).dispatch, true)
+ assert.equal(allowedOrderActions({ ...order, status: 'PENDING', assigneeUserId: '2' }, admin).dispatch, false)
+ assert.equal(allowedOrderActions({ ...order, status: 'PENDING', assigneeUserId: '2' }, admin).reassign, true)
+ assert.equal(allowedOrderActions({ ...order, status: 'IN_PROGRESS', assigneeUserId: null }, admin).dispatch, false)
+ assert.equal(allowedOrderActions({ ...order, status: 'PENDING', assigneeUserId: null }, user(2)).dispatch, false)
+})

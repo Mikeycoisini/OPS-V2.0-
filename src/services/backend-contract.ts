@@ -22,7 +22,7 @@ export function allowedOrderActions(order: Pick<Order, 'status' | 'assigneeUserI
   const acceptance = !!user && !own && (String(order.createdBy) === String(user.userId) || user.roleCodes.includes('ACCEPTOR'))
   return {
     reassign: ['PENDING', 'IN_PROGRESS'].includes(order.status) && !!user?.roleCodes.includes('TENANT_ADMIN'),
-    dispatch: order.status === 'PENDING' && !!user?.roleCodes.includes('TENANT_ADMIN'),
+    dispatch: order.status === 'PENDING' && order.assigneeUserId == null && !!user?.roleCodes.includes('TENANT_ADMIN'),
     start: order.status === 'PENDING' && own,
     note: order.status === 'IN_PROGRESS' && own,
     submit: order.status === 'IN_PROGRESS' && own,
