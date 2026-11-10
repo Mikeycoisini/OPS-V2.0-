@@ -22,6 +22,7 @@ const nav = [
   { path: '/maintenance', label: '维护计划', icon: CalendarClock, caption: '维护 · 巡检' },
   { path: '/statistics', label: '维护统计', icon: ChartNoAxesColumn, caption: '工单与设备统计' },
   { path: '/inventory', label: '备件库存', icon: Package, caption: '仓库与出入库' },
+  { path: '/teams', label: '协作团队', icon: Users, caption: '团队成员与工作厂区' },
 ]
 async function logout() {
   loggingOut.value = true

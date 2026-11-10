@@ -1,4 +1,5 @@
 import type { AuthUser, Order } from '../domain'
+import { resourceId, type ResourceId } from './resource-id.ts'
 
 export type Query = Record<string, string | number | boolean | null | undefined>
 export function queryPath(path: string, query: Query = {}) {
@@ -11,16 +12,16 @@ export function queryPath(path: string, query: Query = {}) {
 }
 
 export type OrderAction = 'dispatch' | 'start' | 'repair-notes' | 'submit' | 'approve' | 'reject'
-export function orderActionPath(id: number, action: OrderAction) {
-  if (!Number.isSafeInteger(id) || id < 1) throw new Error('工单 ID 必须为正整数')
-  return `/work-orders/${id}/${action}`
+export function orderActionPath(id: ResourceId, action: OrderAction) {
+  return `/work-orders/${resourceId(id)}/${action}` // 保留工单字符串ID精度。
 }
 
 /** 前端只控制操作入口，最终权限与状态仍由后端实时校验。 */
 export function allowedOrderActions(order: Pick<Order, 'status' | 'assigneeUserId' | 'createdBy'>, user: Pick<AuthUser, 'userId' | 'roleCodes'> | null) {
-  const own = !!user && order.assigneeUserId === user.userId
-  const acceptance = !!user && !own && (order.createdBy === user.userId || user.roleCodes.includes('ACCEPTOR'))
+  const own = !!user && order.assigneeUserId != null && String(order.assigneeUserId) === String(user.userId)
+  const acceptance = !!user && !own && (String(order.createdBy) === String(user.userId) || user.roleCodes.includes('ACCEPTOR'))
   return {
+    reassign: ['PENDING', 'IN_PROGRESS'].includes(order.status) && !!user?.roleCodes.includes('TENANT_ADMIN'),
     dispatch: order.status === 'PENDING' && !!user?.roleCodes.includes('TENANT_ADMIN'),
     start: order.status === 'PENDING' && own,
     note: order.status === 'IN_PROGRESS' && own,

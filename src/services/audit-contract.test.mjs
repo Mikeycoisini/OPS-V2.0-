@@ -95,3 +95,21 @@ test('厂区创建更新审计按SITE筛选并保留最小变更字段，中文�
   assert.deepEqual((await api.auditEvent(id)).changes, changes)
   assert.deepEqual(Object.keys(changes), ['changedFields', 'beforeEnabled', 'afterEnabled'])
 })
+
+test('A4团队与责任交接审计中文标签、集合和空团队含义保持准确，不展示原因正文', async () => {
+ const { auditActionLabels, auditObjectLabels, auditChangeLabel, auditChangeValue } = await import('./audit-contract.ts')
+ for (const [action, label] of Object.entries({ TEAM_CREATED: '创建团队', TEAM_UPDATED: '更新团队', TEAM_MEMBERS_CHANGED: '变更团队成员', TEAM_SITE_SCOPES_CHANGED: '变更团队工作厂区', WORK_ORDER_REASSIGNED: '工单受控改派' })) assert.equal(auditActionLabels[action], label)
+ assert.equal(auditObjectLabels.TEAM,'团队'); assert.equal(auditObjectLabels.WORK_ORDER,'工单')
+ const members={field:'membershipIds',before:['2119840104873218049'],after:[],version:1}
+ assert.equal(auditChangeLabel('before',members,'TEAM_MEMBERS_CHANGED'),'变更前团队成员')
+ assert.equal(auditChangeValue('before',members,'TEAM_MEMBERS_CHANGED'),'成员关系 #2119840104873218049')
+ assert.equal(auditChangeValue('after',members,'TEAM_MEMBERS_CHANGED'),'无团队成员')
+ const sites={field:'siteIds',before:['11'],after:[],version:2}
+ assert.equal(auditChangeValue('after',sites,'TEAM_SITE_SCOPES_CHANGED'),'无工作厂区')
+ assert.equal(auditChangeValue('after',sites,'MEMBER_SITE_SCOPES_CHANGED'),'无普通厂区授权')
+ const handoff={beforeAssigneeUserId:null,afterAssigneeUserId:'2119840104873218049',beforeTeamId:null,afterTeamId:'2119840104873218050',beforeVersion:1,version:2,reasonPresent:true}
+ assert.equal(auditChangeLabel('afterAssigneeUserId',handoff,'WORK_ORDER_REASSIGNED'),'交接后负责人')
+ assert.equal(auditChangeValue('beforeTeamId',handoff,'WORK_ORDER_REASSIGNED'),'个人接单')
+ assert.equal(auditChangeValue('afterTeamId',handoff,'WORK_ORDER_REASSIGNED'),'团队 #2119840104873218050')
+ assert.equal(auditChangeValue('reasonPresent',handoff,'WORK_ORDER_REASSIGNED'),'已记录，正文见工单处理时间线')
+})

@@ -6,6 +6,8 @@ import type { AuthUser, Member, Order, OrderCreate, OrderLog, OrderPart, Page, S
 import { createHttpClient } from './http'
 import { createAuditApi } from './audit-contract'
 import { createSiteApi } from './site-contract'
+import { createTeamApi } from './team-contract'
+import { resourceId, type ResourceId } from './resource-id'
 import { compatibleEquipmentPath } from './compatibility-path'
 import type { CompatibleEquipment } from './s2-contract'
 import { assertOverduePage } from './overdue-contract'
@@ -25,6 +27,7 @@ async function paged<T>(path: string, query: Query = {}): Promise<Page<T>> {
 export const api = {
   ...createAuditApi(request),
   ...createSiteApi(request),
+  ...createTeamApi(request),
   alerts: (query: Query = {}) => paged<AlertEvent>('/operations/alerts', query),
   alert: (id: AlertId) => request<AlertEvent>(`/operations/alerts/${id}`),
   alertActions: (id: AlertId) => request<AlertAction[]>(`/operations/alerts/${id}/actions`),
@@ -61,11 +64,11 @@ export const api = {
   activateTenant: (tenantId: number) => request<AuthUser>('/auth/active-tenant', json('POST', { tenantId })),
   summary: () => request<WorkspaceSummary>('/workspace/summary'),
   workOrders: async (query: Query = {}) => { const page = await paged<Order>('/work-orders', query); assertOverduePage(page, query.overdueOnly === true); return page },
-  order: (id: number) => request<Order>(`/work-orders/${id}`),
-  orderLogs: (id: number) => request<OrderLog[]>(`/work-orders/${id}/logs`),
-  orderParts: (id: number) => request<OrderPart[]>(`/work-orders/${id}/parts`),
+  order: (id: ResourceId) => request<Order>(`/work-orders/${resourceId(id)}`),
+  orderLogs: (id: ResourceId) => request<OrderLog[]>(`/work-orders/${resourceId(id)}/logs`),
+  orderParts: (id: ResourceId) => request<OrderPart[]>(`/work-orders/${resourceId(id)}/parts`),
   createWorkOrder: (body: OrderCreate) => request<Order>('/work-orders', json('POST', body)),
-  orderAction: (id: number, action: OrderAction, body?: unknown) => request<Order>(orderActionPath(id, action), json(action === 'dispatch' ? 'PUT' : 'POST', body)),
+  orderAction: (id: ResourceId, action: OrderAction, body?: unknown) => request<Order>(orderActionPath(id, action), json(action === 'dispatch' ? 'PUT' : 'POST', body)),
   equipmentDetail: (id: number) => request<Equipment>(`/equipment/${id}`),
   equipment: async (current = 1, size = 10, keyword = '', status: EquipmentStatusFilter = 'ALL'): Promise<EquipmentPage> =>
     readEquipmentPage<Equipment>(await request<unknown>(equipmentListPath(current, size, keyword, status))),

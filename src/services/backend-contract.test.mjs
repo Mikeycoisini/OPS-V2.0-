@@ -52,3 +52,12 @@ test('restoring a pending stock operation reuses its key after closing or reload
   const intent = createMutationIntent(() => 'unexpected-new-key', { key: 'saved-key', body: { quantity: 2, issueTransactionId: 18, note: '' } })
   assert.deepEqual(intent.prepare({ quantity: 2, issueTransactionId: 18, note: '' }), { key: 'saved-key', body: { quantity: 2, issueTransactionId: 18, note: '' } })
 })
+
+test('工单字符串ID保留精度，身份比较兼容字符串且不能自验收，受控改派仅管理员未结束前两态', () => {
+ assert.equal(orderActionPath('2119840104873218049', 'dispatch'), '/work-orders/2119840104873218049/dispatch')
+ assert.equal(allowedOrderActions({ ...order, assigneeUserId: '2' }, user(2, ['ACCEPTOR'])).approve, false)
+ assert.equal(allowedOrderActions({ ...order, status: 'PENDING', assigneeUserId: '2' }, user(2)).start, true)
+ for (const status of ['PENDING', 'IN_PROGRESS']) assert.equal(allowedOrderActions({ ...order, status }, user(3, ['TENANT_ADMIN'])).reassign, true)
+ for (const status of ['AWAITING_ACCEPTANCE', 'COMPLETED']) assert.equal(allowedOrderActions({ ...order, status }, user(3, ['TENANT_ADMIN'])).reassign, false)
+ assert.equal(allowedOrderActions({ ...order, status: 'PENDING' }, user(2)).reassign, false)
+})

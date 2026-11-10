@@ -43,14 +43,14 @@ onMounted(() => { void load() }) // 路由挂载后读取当前企业。
 
 <template>
   <div>
-    <PageHead title="操作审计" description="查看当前企业的成员与厂区操作记录、结果和变更详情。" eyebrow="ORGANIZATION / AUDIT" />
+    <PageHead title="操作审计" description="查看当前企业的成员、厂区、团队及工单交接记录。" eyebrow="ORGANIZATION / AUDIT" />
     <section v-if="store.isAdmin" class="panel">
       <div class="panel-heading"><h2>企业操作记录<small>{{ store.user?.activeTenant?.name }}</small></h2><span class="muted">只读记录</span></div>
       <form class="filter-bar audit-filters" @submit.prevent="load()">
         <el-select v-model="filters.action" clearable placeholder="全部动作" aria-label="审计动作"><el-option v-for="(label, value) in auditActionLabels" :key="value" :label="label" :value="value" /></el-select>
         <el-input v-model="filters.actorUserId" clearable placeholder="操作者用户 ID" aria-label="操作者用户 ID" inputmode="numeric" />
         <el-select v-model="filters.objectType" clearable placeholder="全部对象类型" aria-label="审计对象类型"><el-option v-for="(label, value) in auditObjectLabels" :key="value" :label="label" :value="value" /></el-select>
-        <el-input v-model="filters.objectId" clearable placeholder="对象 ID（成员关系或厂区 ID）" aria-label="审计对象 ID" inputmode="numeric" />
+        <el-input v-model="filters.objectId" clearable placeholder="对象 ID（所选资源 ID）" aria-label="审计对象 ID" inputmode="numeric" />
         <el-select v-model="filters.outcome" clearable placeholder="全部结果" aria-label="审计结果"><el-option v-for="(label, value) in auditOutcomeLabels" :key="value" :label="label" :value="value" /></el-select>
         <el-date-picker v-model="filters.occurredFrom" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" placeholder="发生时间起" aria-label="发生时间下限" />
         <el-date-picker v-model="filters.occurredTo" type="datetime" value-format="YYYY-MM-DDTHH:mm:ss" placeholder="发生时间止" aria-label="发生时间上限" />
@@ -74,7 +74,7 @@ onMounted(() => { void load() }) // 路由挂载后读取当前企业。
       <PagePager v-if="!error" :current="page.current" :size="page.size" :total="page.total" :loading="loading" @change="load" @resize="resource.params.size = $event; load()" />
     </section>
     <p v-else class="info-note">仅企业管理员可查看操作审计。</p>
-    <p class="page-footnote">对象 ID 为对应的成员关系 ID 或厂区 ID。操作者姓名为当前企业显示名；时间筛选包含起止时刻。</p>
+    <p class="page-footnote">对象 ID 为所选资源的成员关系、厂区、团队或工单 ID。操作者姓名为当前企业显示名；时间筛选包含起止时刻。</p>
     <el-dialog v-model="visible" title="审计事件详情" width="min(760px,94vw)" destroy-on-close>
       <ResourceState :loading="detailLoading" :error="detailError" :empty="!record" title="审计事件详情" @retry="selectedId !== null && show(selectedId)" />
       <template v-if="!detailLoading && !detailError && record">
@@ -89,7 +89,7 @@ onMounted(() => { void load() }) // 路由挂载后读取当前企业。
           <el-descriptions-item label="请求编号">{{ record.requestId || '—' }}</el-descriptions-item>
         </el-descriptions>
         <h3 class="audit-change-title">变更详情</h3>
-        <dl v-if="record.changes && Object.keys(record.changes).length" class="audit-changes"><template v-for="(_, key) in record.changes" :key="key"><dt>{{ auditChangeLabel(String(key), record.changes) }}</dt><dd>{{ auditChangeValue(String(key), record.changes) }}</dd></template></dl>
+        <dl v-if="record.changes && Object.keys(record.changes).length" class="audit-changes"><template v-for="(_, key) in record.changes" :key="key"><dt>{{ auditChangeLabel(String(key), record.changes, record.action) }}</dt><dd>{{ auditChangeValue(String(key), record.changes, record.action) }}</dd></template></dl>
         <p v-else class="info-note">暂无可展示的变更详情。</p>
       </template>
       <template #footer><el-button @click="detail.close()">关闭</el-button></template>

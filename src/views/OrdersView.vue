@@ -7,6 +7,7 @@ import { api } from '@/services/api'
 import { useAppStore } from '@/stores/app'
 import { usePage } from '@/composables/usePage'
 import { errorMessage, formatTime, orderStatusLabel, priorityLabel } from '@/services/backend-contract'
+import { resourceId } from '@/services/resource-id'
 import type { OrderPriority, OrderCreate } from '@/domain'
 import PageHead from '@/components/PageHead.vue'
 import ResourceState from '@/components/ResourceState.vue'
@@ -19,7 +20,7 @@ const route = useRoute()
 const resource = usePage(api.workOrders, () => store.epoch)
 const { records, page, loading, error } = resource
 const filters = reactive({ overdueOnly: route.query.overdueOnly === 'true', keyword: '', status: Object.prototype.hasOwnProperty.call(orderStatusLabel, String(route.query.status)) ? String(route.query.status) : '', priority: '', equipmentId: route.query.equipmentId ? Number(route.query.equipmentId) : null as number | null })
-const selected = ref<number | null>(null)
+const selected = ref<number | string | null>(null)
 const createOpen = ref(false)
 const saving = ref(false)
 const formError = ref('')
@@ -40,8 +41,7 @@ async function create() {
 }
 onMounted(() => {
   void load()
-  const id = Number(route.query.detail)
-  if (Number.isSafeInteger(id) && id > 0) selected.value = id
+  if (typeof route.query.detail === 'string') { try { selected.value = resourceId(route.query.detail) } catch { /* 非法链接不打开详情。 */ } }
   if (route.query.create === '1') openCreate()
 })
 </script>
