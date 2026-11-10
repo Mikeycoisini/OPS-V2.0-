@@ -55,6 +55,7 @@ const id: AuditId = '2119840104873218049';
 const api = createAuditApi(async <T>() => ({} as T));
 api.auditEvent(id); api.auditEvent(1);
 const event: Pick<AuditEvent, 'id' | 'actorUserId' | 'objectId'> = { id, actorUserId: id, objectId: id };
+const siteEvent: Pick<AuditEvent, 'action' | 'objectType'> = { action: 'SITE_CREATED', objectType: 'SITE' };
 useAuditDetail(api.auditEvent, () => 1).show(event.id);`
   const options = { noEmit: true, strict: true, skipLibCheck: true, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, allowImportingTsExtensions: true }
   const host = ts.createCompilerHost(options), readSource = host.getSourceFile.bind(host)
@@ -62,4 +63,35 @@ useAuditDetail(api.auditEvent, () => 1).show(event.id);`
   const program = ts.createProgram([fixture], options, host)
   const diagnostics = ts.getPreEmitDiagnostics(program)
   assert.deepEqual(diagnostics.map(d => ts.flattenDiagnosticMessageText(d.messageText, '\n')), [])
+})
+
+test('成员厂区范围动作及前后集合按厂区ID清楚展示，空集合明确无授权', async () => {
+  const { auditActionLabels, auditChangeLabel, auditChangeValue } = await import('./audit-contract.ts')
+  assert.equal(auditActionLabels.MEMBER_SITE_SCOPES_CHANGED, '变更成员厂区范围')
+  const changes = { field: 'siteIds', before: ['2119840104873218049', '12'], after: [] }
+  assert.equal(auditChangeLabel('before', changes), '变更前厂区')
+  assert.equal(auditChangeLabel('after', changes), '变更后厂区')
+  assert.equal(auditChangeValue('field', changes), '厂区访问范围')
+  assert.equal(auditChangeValue('before', changes), '厂区 #2119840104873218049、厂区 #12')
+  assert.equal(auditChangeValue('after', changes), '无普通厂区授权')
+  assert.equal(auditChangeValue('errorCode', { errorCode: 'BUSINESS_CONFLICT' }), 'BUSINESS_CONFLICT')
+  assert.equal(auditChangeValue('unknown', { unknown: ['a'] }), '[\n  "a"\n]')
+})
+
+test('厂区创建更新审计按SITE筛选并保留最小变更字段，中文标签贯通', async () => {
+  const { auditActionLabels, auditObjectLabels } = await import('./audit-contract.ts')
+  assert.equal(auditActionLabels.SITE_CREATED, '创建厂区')
+  assert.equal(auditActionLabels.SITE_UPDATED, '更新厂区')
+  assert.equal(auditObjectLabels.SITE, '厂区')
+  const paths = [], id = '2119840104873218051'
+  const changes = { changedFields: ['name', 'address', 'enabled'], beforeEnabled: true, afterEnabled: false }
+  const http = createHttpClient({ fetcher: async url => {
+    paths.push(url)
+    return Response.json({ code: 200, data: url.includes('?') ? { records: [{ id, action: 'SITE_UPDATED', objectType: 'SITE', objectId: id, summary: '更新厂区资料' }], current: 1, size: 10, total: 1, pages: 1 } : { id, action: 'SITE_UPDATED', objectType: 'SITE', changes } })
+  } })
+  const api = createAuditApi(http.request), page = await api.auditEvents({ action: 'SITE_UPDATED', objectType: 'SITE', objectId: id })
+  assert.equal(new URL(paths[0], 'http://test').searchParams.get('objectType'), 'SITE')
+  assert.equal(page.records[0].objectId, id)
+  assert.deepEqual((await api.auditEvent(id)).changes, changes)
+  assert.deepEqual(Object.keys(changes), ['changedFields', 'beforeEnabled', 'afterEnabled'])
 })

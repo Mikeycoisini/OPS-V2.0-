@@ -5,7 +5,7 @@ export interface Page<T> { records: T[]; current: number; size: number; total: n
 export interface Tenant { id: number; tenantCode: string; name: string; enabled: boolean }
 export interface AuthUser { userId: number; account: string; name: string; activeTenant: Tenant | null; membershipId: number | null; roleCodes: string[] }
 export interface Role { id: number; roleCode: string; name: string }
-export interface Member { id: number; tenantId: number; userId: number; account: string; displayName: string; enabled: boolean; roles: Role[]; joinedAt: string; createdAt: string }
+export interface Member { id: number | string; tenantId: number | string; userId: number | string; account: string; displayName: string; enabled: boolean; roles: Role[]; joinedAt: string; createdAt: string }
 export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'AWAITING_ACCEPTANCE' | 'COMPLETED'
 export type OrderPriority = 'NORMAL' | 'HIGH' | 'URGENT'
 export interface OrderLog { id: number; workOrderId: number; eventType: string; fromStatus: OrderStatus | null; toStatus: OrderStatus | null; title: string; detail: string; actorUserId: number; createdAt: string }

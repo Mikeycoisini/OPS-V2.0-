@@ -5,6 +5,7 @@ import type { Equipment, EquipmentPage, EquipmentStatusFilter, EquipmentUpsert, 
 import type { AuthUser, Member, Order, OrderCreate, OrderLog, OrderPart, Page, SparePart, SparePartUpsert, StockInput, StockIssue, StockReturn, StockTransaction, Tenant, Warehouse, WarehouseStock, WorkspaceSummary } from '@/domain'
 import { createHttpClient } from './http'
 import { createAuditApi } from './audit-contract'
+import { createSiteApi } from './site-contract'
 import { compatibleEquipmentPath } from './compatibility-path'
 import type { CompatibleEquipment } from './s2-contract'
 import { assertOverduePage } from './overdue-contract'
@@ -23,6 +24,7 @@ async function paged<T>(path: string, query: Query = {}): Promise<Page<T>> {
 
 export const api = {
   ...createAuditApi(request),
+  ...createSiteApi(request),
   alerts: (query: Query = {}) => paged<AlertEvent>('/operations/alerts', query),
   alert: (id: AlertId) => request<AlertEvent>(`/operations/alerts/${id}`),
   alertActions: (id: AlertId) => request<AlertAction[]>(`/operations/alerts/${id}/actions`),
@@ -85,6 +87,6 @@ export const api = {
   stockReturn: (key: string, body: StockReturn) => request<StockTransaction>('/inventory/returns', { ...json('POST', body), headers: { 'Idempotency-Key': key } }),
   members: (query: Query = {}) => paged<Member>('/tenant-members', query),
   addMember: (userId: number) => request<Member>('/tenant-members', json('POST', { userId, roleIds: [] })),
-  memberStatus: (id: number, enabled: boolean) => request<Member>(`/tenant-members/${id}/status`, json('PATCH', { enabled })),
+  memberStatus: (id: number | string, enabled: boolean) => request<Member>(`/tenant-members/${id}/status`, json('PATCH', { enabled })),
   user: (id: number) => request<{ id: number; account: string; displayName: string; enabled: boolean }>(queryPath('/users/id', { id })),
 }

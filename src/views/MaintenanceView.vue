@@ -17,7 +17,7 @@ const filters = reactive({ keyword: '', planType: '', dueOnly: false })
 const selected = ref<MaintenancePlan | null>(null), history = usePage((query) => api.maintenanceHistory(selected.value!.id, query), () => store.epoch)
 const executionDetail = ref<MaintenanceExecution | null>(null), editor = ref(false), busy = ref(false), formError = ref(''), detailError = ref(''), result = ref('')
 const editingId = ref<number | null>(null)
-const form = reactive({ name: '', equipmentId: null as number | null, planType: 'MAINTENANCE' as 'MAINTENANCE' | 'INSPECTION', content: '', cycleDays: 30, nextDueDate: '', assigneeUserId: null as number | null })
+const form = reactive({ name: '', equipmentId: null as number | null, planType: 'MAINTENANCE' as 'MAINTENANCE' | 'INSPECTION', content: '', cycleDays: 30, nextDueDate: '', assigneeUserId: null as number | string | null })
 let sequence = 0
 const pending = ref<{ key: string; body: { result: string }; planId: number } | null>(null)
 const storageKey = () => `equipops:maintenance:${store.user?.userId}:${store.user?.activeTenant?.id}`

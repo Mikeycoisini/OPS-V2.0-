@@ -42,7 +42,8 @@ npm run preview
 | 备件库存 | `/spare-parts` 目录、`/warehouses` 已启用默认仓库、`/warehouse-stocks` 余额、`/inventory/transactions` 流水 |
 | 出入库 | `/inventory/stock-ins` 入库、`/inventory/issues` 工单领料、`/inventory/returns` 按原领料退回 |
 | 操作审计 | 管理员读取`/audit-events`分页与详情，按动作、操作者、对象、结果及时间筛选；仅展示后端脱敏数据，无编辑删除 |
-| 企业成员 | 管理员使用 `/tenant-members` 分页、添加已有账号和启停成员；角色只读展示 |
+| 厂区管理 | 管理员使用 `/sites/catalog` 读取厂区目录，通过现有 POST/PUT 维护资料与启停；`GET /sites` 仍为默认厂区 |
+| 企业成员 | 管理员使用 `/tenant-members` 分页、添加已有账号和启停成员；使用 `/{id}/site-scopes` 完整替换厂区访问范围，角色只读展示 |
 
 ### 保留的业务边界
 
@@ -64,3 +65,7 @@ npm run preview
 新增页面包括日期周期维护、维修统计与导出故障告警处置，访问权限和状态流转由配套后端核验。后续功能按完整系统阶段路线交付。
 
 审计事件和对象ID兼容BIGINT字符串，页面不转换为JavaScript Number。可按后端59号报告配置本机环境，运行`scripts/a2_browser.cjs`复核真实详情与企业切换晚到响应隔离。
+
+A3新增管理员厂区页及成员厂区范围选择器；空集合明确表示无普通厂区授权，管理员全厂区例外单独提示。范围保存使用读取版本，409冲突需重新加载；企业切换、换成员、关闭及离开页面均作废晚到响应。厂区及成员关系ID兼容BIGINT字符串；通用负责人选择器保持字符串ID，不经Number转换。
+
+A3前端验证分为两个脚本：`scripts/a3_ui_contract.cjs`在真实Chromium中拦截固定HTTP响应，验证页面/传输契约与手机导航，不代表真实后端授权；`scripts/a3_browser.cjs`连接真实本机后端，使用A1隔离账号检查厂区持久化、普通成员旧会话动态撤权及切企业晚到响应，并恢复原成员范围和测试厂区启停状态。前者默认前端5176，后者5177，通过`A3_FRONTEND_URL`改为对应loopback源。真实脚本要求环境提供`A1_TEST_PASSWORD`及隔离库名`A1_DB_CONFIRM`，不得在命令行填写密码；Playwright模块及Chromium路径分别由`A1_PLAYWRIGHT_MODULE`/`A1_CHROMIUM_PATH`指定。截图位于忽略的`artifacts/a3/`。
