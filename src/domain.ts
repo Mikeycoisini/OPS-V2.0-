@@ -8,16 +8,18 @@ export interface AuthUser { userId: number; account: string; name: string; activ
 export interface Role { id: number; roleCode: string; name: string }
 export interface Member { id: number | string; tenantId: number | string; userId: number | string; account: string; displayName: string; enabled: boolean; roles: Role[]; joinedAt: string; createdAt: string }
 export type OrderStatus = 'PENDING' | 'IN_PROGRESS' | 'AWAITING_ACCEPTANCE' | 'COMPLETED'
+export type FaultCategory = 'MECHANICAL' | 'ELECTRICAL' | 'CONTROL' | 'HYDRAULIC' | 'OTHER'
 export type OrderPriority = 'NORMAL' | 'HIGH' | 'URGENT'
 export interface OrderLog { id: ResourceId; workOrderId: ResourceId; eventType: string; fromStatus: OrderStatus | null; toStatus: OrderStatus | null; title: string; detail: string; actorUserId: ResourceId; createdAt: string }
 export interface OrderPart { id: ResourceId; workOrderId: ResourceId; sparePartId: number; partCode: string; partName: string; spec: string | null; unit: string | null; plannedQuantity: number; issuedQuantity: number; returnedQuantity: number }
 export interface Order {
   id: ResourceId; tenantId: ResourceId; siteId: ResourceId; teamId: ResourceId | null; version: number; orderNo: string; title: string; equipmentId: ResourceId; description: string | null
+  faultCategory?: FaultCategory | null
   priority: OrderPriority; status: OrderStatus; assigneeUserId: ResourceId | null; createdBy: ResourceId | null
   dueAt: string | null; completedAt: string | null; createdAt: string; updatedAt: string
   timeline?: OrderLog[]; equipment?: Equipment | null; parts?: OrderPart[]
 }
-export interface OrderCreate { title: string; equipmentId: number; description: string; priority: OrderPriority; dueAt: string | null }
+export interface OrderCreate { faultCategory?: FaultCategory; title: string; equipmentId: number; description: string; priority: OrderPriority; dueAt: string | null }
 export interface WorkspaceSummary {
   tenantId: number; totalOrderCount: number; pendingDispatchCount: number; pendingStartCount: number
   inProgressCount: number; awaitingAcceptanceCount: number; completedCount: number
