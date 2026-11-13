@@ -1,3 +1,9 @@
+export interface EquipmentRuntimeMaintenance {
+  thresholdHours: number | null
+  version: number
+  workOrderId: string | null
+}
+
 export interface EquipmentRuntimeReading {
   id: string
   hours: number

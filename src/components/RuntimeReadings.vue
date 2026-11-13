@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onScopeDispose, ref, watch } from 'vue'
+import RuntimeMaintenance from '@/components/RuntimeMaintenance.vue'
 import ResourceState from '@/components/ResourceState.vue'
 import { api } from '@/services/api'
 import { errorMessage } from '@/services/backend-contract'
@@ -14,6 +15,7 @@ const loading = ref(false)
 const saving = ref(false)
 const loadError = ref('')
 const saveError = ref('')
+const maintenanceRefresh = ref(0)
 let scope = 0
 const dateTime = new Intl.DateTimeFormat('zh-CN', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Shanghai' })
 
@@ -47,6 +49,7 @@ async function save() {
     await store.mutate(() => api.recordRuntimeReading(equipmentId, Number(value)))
     if (ticket === scope) {
       hours.value = ''
+      maintenanceRefresh.value++
       await load()
     }
   } catch (reason) {
@@ -89,4 +92,5 @@ onScopeDispose(() => scope++)
       </table>
     </div>
   </section>
+  <RuntimeMaintenance :equipment-id="equipmentId" :refresh="maintenanceRefresh" />
 </template>

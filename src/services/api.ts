@@ -1,7 +1,7 @@
 import type { AlertEvent, AlertRule, AlertRuleInput, AlertAction, AlertNotice, AlertId } from './operations'
 import type { InventoryExportTask } from './inventory-export'
 import type { MaintenancePlan, MaintenanceInput, MaintenanceExecution, CompatiblePart, RepairCount, DailyTrend, ProcessingDuration, OverdueSummary } from './s2-contract'
-import type { Equipment, EquipmentPage, EquipmentRuntimeReading, EquipmentStatusFilter, EquipmentUpsert, MaintenanceHistoryRecord } from '@/types'
+import type { Equipment, EquipmentPage, EquipmentRuntimeMaintenance, EquipmentRuntimeReading, EquipmentStatusFilter, EquipmentUpsert, MaintenanceHistoryRecord } from '@/types'
 import type { AuthUser, Member, Order, OrderCreate, OrderLog, OrderPart, Page, SparePart, SparePartUpsert, StockInput, StockIssue, StockReturn, StockTransaction, Tenant, Warehouse, WarehouseStock, WorkspaceSummary } from '@/domain'
 import { createHttpClient } from './http'
 import { createAuditApi } from './audit-contract'
@@ -50,6 +50,9 @@ export const api = {
   createMaintenanceExecution: (id: number, key: string, body: { result: string }) => request<MaintenanceExecution>(`/maintenance-plans/${id}/executions`, { ...json('POST', body), headers: { 'Idempotency-Key': key } }),
   maintenanceHistory: (id: number, query: Query = {}) => paged<MaintenanceExecution>(`/maintenance-plans/${id}/executions`, query),
   maintenanceExecution: (id: number) => request<MaintenanceExecution>(`/maintenance-executions/${id}`),
+  runtimeMaintenance: (id: number) => request<EquipmentRuntimeMaintenance>(`/equipment/${id}/runtime-maintenance`),
+  configureRuntimeMaintenance: (id: number, thresholdHours: number, expectedVersion: number) =>
+    request<EquipmentRuntimeMaintenance>(`/equipment/${id}/runtime-maintenance`, json('PUT', { thresholdHours, expectedVersion })),
   runtimeReadings: (id: number) => request<EquipmentRuntimeReading[]>(`/equipment/${id}/runtime-readings`),
   recordRuntimeReading: (id: number, hours: number) =>
     request<EquipmentRuntimeReading>(`/equipment/${id}/runtime-readings`, json('POST', { hours })),
