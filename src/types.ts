@@ -1,3 +1,10 @@
+export interface EquipmentRuntimeReading {
+  id: string
+  hours: number
+  recordedBy: string
+  recordedAt: number
+}
+
 /** 设备契约；企业、工单和库存的实际后端类型见 domain.ts。 */
 export type EquipmentStatus = 'RUNNING' | 'NEEDS_ATTENTION' | 'STOPPED'
 export type EquipmentStatusFilter = 'ALL' | EquipmentStatus
