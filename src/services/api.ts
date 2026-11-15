@@ -1,3 +1,4 @@
+import type { AvailabilityAction, AvailabilityAlert } from './platform-availability'
 import type { AlertEvent, AlertRule, AlertRuleInput, AlertAction, AlertNotice, AlertId } from './operations'
 import type { InventoryExportTask } from './inventory-export'
 import type { MaintenancePlan, MaintenanceInput, MaintenanceExecution, CompatiblePart, RepairCount, DailyTrend, ProcessingDuration, OverdueSummary } from './s2-contract'
@@ -28,6 +29,11 @@ export const api = {
   ...createAuditApi(request),
   ...createSiteApi(request),
   ...createTeamApi(request),
+  platformOperator: () => request<{ userId: string }>('/platform/me'),
+  platformAvailabilityAlerts: (inbox: boolean, before?: string) =>
+    request<AvailabilityAlert[]>(queryPath('/platform/availability-alerts', { inbox, before })),
+  actOnPlatformAvailability: (id: string, action: AvailabilityAction) =>
+    request<void>(`/platform/availability-alerts/${resourceId(id)}/actions/${action}`, json('POST')),
   alerts: (query: Query = {}) => paged<AlertEvent>('/operations/alerts', query),
   alert: (id: AlertId) => request<AlertEvent>(`/operations/alerts/${id}`),
   alertActions: (id: AlertId) => request<AlertAction[]>(`/operations/alerts/${id}/actions`),

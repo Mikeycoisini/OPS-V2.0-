@@ -4,6 +4,7 @@ import { authRequired } from '@/config'
 
 export const router = createRouter({ history: createWebHistory(), routes: [
   { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue'), meta: { public: true } },
+  { path: '/platform/availability', name: 'platform-availability', component: () => import('@/views/PlatformAvailabilityView.vue'), meta: { platform: true } },
   { path: '/select-tenant', name: 'select-tenant', component: () => import('@/views/TenantSelectView.vue') },
   { path: '/', component: () => import('@/components/AppShell.vue'), children: [
     { path: '', redirect: '/workspace' },
@@ -26,7 +27,7 @@ router.beforeEach(async to => {
   const store = useAppStore()
   await store.bootstrap()
   if (!to.meta.public && authRequired && !store.isAuthenticated) return { name: 'login', query: { redirect: to.fullPath } }
-  if (store.isAuthenticated && !store.user?.activeTenant && to.name !== 'select-tenant') return { name: 'select-tenant', query: { redirect: to.fullPath } }
+  if (store.isAuthenticated && !store.user?.activeTenant && to.name !== 'select-tenant' && !to.meta.platform) return { name: 'select-tenant', query: { redirect: to.fullPath } }
   if (to.name === 'login' && store.isAuthenticated) return { name: 'workspace' }
   if (to.meta.admin && !store.isAdmin) return { name: 'workspace', query: { notice: 'members-admin' } }
 })

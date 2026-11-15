@@ -24,4 +24,5 @@ async function changeAccount() {
   finally { busy.value = false }
 }
 </script>
-<template><main class="tenant-select-page"><section class="tenant-select-card"><span class="brand-icon"><Building2 :size="24" /></span><span class="page-eyebrow">EQUIPOPS / ORGANIZATION</span><h1>选择工作企业</h1><p class="muted">进入你的设备、工单与库存工作空间。</p><TenantChooser @chosen="afterChoose" /><el-button link :loading="busy" :disabled="store.switching" @click="changeAccount">退出并更换账号</el-button></section></main></template>
+<template><main class="tenant-select-page"><section class="tenant-select-card"><span class="brand-icon"><Building2 :size="24" /></span><span class="page-eyebrow">EQUIPOPS / ORGANIZATION</span><h1>选择工作企业</h1><p class="muted">进入你的设备、工单与库存工作空间。</p><TenantChooser @chosen="afterChoose" /><el-button link :loading="busy" :disabled="store.switching" @click="changeAccount">退出并更换账号</el-button><RouterLink :to="{ name: 'platform-availability' }">平台可用性告警</RouterLink></section></main>
+</template>

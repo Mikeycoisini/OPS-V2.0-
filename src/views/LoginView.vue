@@ -19,7 +19,7 @@ async function submit() {
     await store.login(form.account, form.password)
     form.password = ''
     const redirect = typeof route.query.redirect === 'string' && /^\/(?!\/)/.test(route.query.redirect) && !route.query.redirect.startsWith('/login') ? route.query.redirect : '/workspace'
-    await router.replace(store.user?.activeTenant ? redirect : { name: 'select-tenant', query: { redirect } })
+    await router.replace((store.user?.activeTenant || router.resolve(redirect).meta.platform) ? redirect : { name: 'select-tenant', query: { redirect } })
   } catch (reason) { error.value = errorMessage(reason) } finally { busy.value = false }
 }
 </script>
