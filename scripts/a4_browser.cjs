@@ -14,7 +14,23 @@ async function request(page,path,method='GET',body){return page.evaluate(async({
  const response=await fetch(path,{method,headers,signal:AbortSignal.timeout(25000),...(body===undefined?{}:{body:JSON.stringify(body)})});const payload=await response.json();
  if(!response.ok||(payload.code&&payload.code!==200))throw Object.assign(new Error(`HTTP ${response.status}: ${payload.message||payload.msg||path}`),{status:response.status});return payload.data===undefined?payload:payload.data;
 },{path,method,body});}
-async function login(page,account){await page.goto(new URL('/login',base).href);await page.getByPlaceholder('请输入账号').fill(account);await page.getByPlaceholder('请输入密码').fill(process.env.A1_TEST_PASSWORD);await page.getByRole('button',{name:'登录',exact:true}).click();await page.getByRole('button',{name:new RegExp(fixture.tenantAName||'A1验证企业A')}).click();await page.locator('.tenant-switch').filter({hasText:fixture.tenantAName||'A1验证企业A'}).waitFor();await page.waitForLoadState('networkidle');}
+async function login(page, account) {
+  const tenant = fixture.tenantAName || 'A1验证企业A';
+  await page.goto(new URL('/login', base).href);
+  await page.getByPlaceholder('请输入账号').fill(account);
+  await page.getByPlaceholder('请输入密码').fill(process.env.A1_TEST_PASSWORD);
+  await page.getByRole('button', { name: '登录', exact: true }).click();
+  await page.getByRole('button', { name: new RegExp(tenant) }).click();
+  await page.waitForURL('**/workspace');
+  const navigation = page.locator('button[aria-label="展开导航"]');
+  await navigation.waitFor({ state: 'attached' });
+  const mobile = await navigation.isVisible();
+  if (mobile) await navigation.click();
+  await page.locator('.tenant-switch').filter({ hasText: tenant }).waitFor();
+  if (mobile) await page.getByRole('button', { name: '关闭导航' }).click();
+  const me = await request(page, '/api/auth/me');
+  assert.equal(String(me.activeTenant.id), String(fixture.tenantAId));
+}
 async function chooseCheckbox(dialog,id,checked){const input=dialog.locator(`.el-checkbox input[value="${id}"]`);await input.waitFor({state:'attached'});if(await input.isChecked()!==checked)await input.locator('..').locator('..').click();assert.equal(await input.isChecked(),checked);}
 async function chooseTarget(dialog,userId,teamId,teamName){const memberSelect=dialog.locator('.el-select').first();await memberSelect.click();await dialog.getByRole('combobox').first().fill(fixture.memberAccount||'a1_member');await pageOption(dialog.page(),new RegExp(`#${userId}$`));const teamSelect=dialog.locator('.el-select').nth(1);await teamSelect.click();await dialog.page().getByRole('option',{name:`${teamName} · ${teamCode}`,exact:true}).click();}
 async function pageOption(page,name){await page.getByRole('option',{name}).click();}
@@ -26,7 +42,7 @@ async function settle(page){await page.evaluate(async()=>{await new Promise(reso
  const errors=[],warnings=[];for(const page of [admin,member]){page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='warning'&&m.text().includes('Failed to resolve component'))warnings.push(m.text());});}
  let original,teamId,release,summary;
  try{
-  await login(admin,fixture.adminAccount||'a1_admin');const me=await request(admin,'/api/auth/me');assert.equal(String(me.activeTenant.id),String(fixture.tenantAId));
+  await login(admin,fixture.adminAccount||'a1_admin');
   original=await request(admin,`/api/work-orders/${fixture.workOrderId}`);assert.ok(original.assigneeUserId,'Fixture must have a restorable assignee');assert.ok(['PENDING','IN_PROGRESS'].includes(original.status));assert.equal(typeof original.id,'string');
   const beforeLogs=await request(admin,`/api/work-orders/${original.id}/logs`),beforeParts=await request(admin,`/api/work-orders/${original.id}/parts`);
   await admin.getByRole('link',{name:/协作团队/}).click();await admin.getByRole('heading',{name:'团队管理',exact:true}).waitFor();await admin.getByRole('button',{name:'新建团队',exact:true}).click();
