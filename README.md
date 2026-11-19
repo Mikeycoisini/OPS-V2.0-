@@ -15,7 +15,7 @@ npm install
 npm run dev
 ```
 
-默认 `http://localhost:5174`，端口占用时直接提示。开发服务将 `/api` 代理到 `http://localhost:8082`。`VITE_API_BASE_URL` 留空即可走代理；如指定另一个源地址，需由后端允许该源携带 Cookie 的跨域请求。
+默认 `http://localhost:5175`，端口占用时直接提示。开发服务将 `/api` 代理到 `http://localhost:8082`。`VITE_API_BASE_URL` 留空即可走代理；如指定另一个源地址，需由后端允许该源携带 Cookie 的跨域请求。
 
 ```bash
 npm run test:contracts
